@@ -114,4 +114,4 @@ Maintained by [nazeeh111](https://github.com/nazeeh111).
 
 ## License
 
-Existing license terms and copyright notices are preserved in [LICENSE](LICENSE).
+Available under the [MIT license](LICENSE).
