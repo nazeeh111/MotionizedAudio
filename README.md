@@ -110,4 +110,8 @@ The compatible `visualmic.py` command and import remain available.
 
 ## Project
 
-Created and maintained by [nazeeh111](https://github.com/nazeeh111).
+Maintained by [nazeeh111](https://github.com/nazeeh111).
+
+## License
+
+Existing license terms and copyright notices are preserved in [LICENSE](LICENSE).
