@@ -1,0 +1,30 @@
+FROM python:3.11-slim
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libgl1 libglib2.0-0 && \
+    rm -rf /var/lib/apt/lists/*
+
+ARG UID
+ARG GID
+ARG UNAME
+
+RUN groupadd -g ${GID} ${UNAME} && \
+    useradd -m -u ${UID} -g ${GID} ${UNAME}
+
+WORKDIR /app
+
+COPY requirements.txt requirements-dev.txt ./
+RUN pip install --no-cache-dir -r requirements.txt -r requirements-dev.txt
+
+COPY visualmic.py motionized_audio.py ./
+COPY tests/ tests/
+COPY ruff.toml .
+
+RUN chown -R ${UID}:${GID} /app
+
+ARG VERSION
+LABEL version=${VERSION}
+
+USER ${UNAME}
+
+ENTRYPOINT ["python", "-u", "motionized_audio.py"]

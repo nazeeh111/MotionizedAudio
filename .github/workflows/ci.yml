@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg UID=$(id -u) \
+            --build-arg GID=$(id -g) \
+            --build-arg UNAME=$(whoami) \
+            -t motionized-audio-ci .
+
+      - name: Lint
+        run: docker run --rm --entrypoint "" motionized-audio-ci ruff check .
+
+      - name: Verify import
+        run: docker run --rm --entrypoint "" motionized-audio-ci python -c "import visualmic"
+
+      - name: Verify --help
+        run: docker run --rm --entrypoint "" motionized-audio-ci python motionized_audio.py --help
+
+      - name: Verify --version
+        run: docker run --rm --entrypoint "" motionized-audio-ci python motionized_audio.py --version
+
+      - name: CPU regression tests
+        run: docker run --rm --entrypoint "" motionized-audio-ci python -m pytest tests/ -q
+
+  test-gpu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build GPU Docker image
+        run: |
+          docker build -f Dockerfile.gpu \
+            --build-arg UID=$(id -u) \
+            --build-arg GID=$(id -g) \
+            --build-arg UNAME=$(whoami) \
+            -t motionized-audio-gpu-ci .
+
+      - name: Lint
+        run: docker run --rm --entrypoint "" motionized-audio-gpu-ci ruff check .
+
+      - name: Verify import
+        run: docker run --rm --entrypoint "" motionized-audio-gpu-ci python -c "import visualmic"
+
+      - name: Verify --help
+        run: docker run --rm --entrypoint "" motionized-audio-gpu-ci python motionized_audio.py --help
+
+      - name: Verify --version
+        run: docker run --rm --entrypoint "" motionized-audio-gpu-ci python motionized_audio.py --version
