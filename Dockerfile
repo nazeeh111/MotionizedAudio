@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt -r requirements-dev.txt
 
 COPY visualmic.py motionized_audio.py ./
 COPY tests/ tests/
+COPY experiments/known_motion.py experiments/
 COPY ruff.toml .
 
 RUN chown -R ${UID}:${GID} /app
