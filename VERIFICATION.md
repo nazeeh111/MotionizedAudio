@@ -37,3 +37,5 @@ The restyled illustration is explanatory artwork, not experimental evidence.
 ## Visual refresh verification
 
 The illustration retains the light scientific-pipeline layout, replaces the cup with an unbranded silver can, and uses indigo accents. It is explanatory artwork, not evidence of a new can experiment. The numerical source and CLI code were unchanged. After this update, the CPU suite again passed 28 tests, with 7 CUDA tests skipped; Ruff passed.
+
+The follow-up flowchart refinement adds numbered stages, consistent arrows, subtle rounded panels, and an explicit illustrative-workflow footer. Recovered output is labeled relative rather than calibrated pressure. This follow-up changes only artwork and this verification note; the previously tested numerical code is unchanged.
