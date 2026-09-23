@@ -33,3 +33,7 @@ downloaded. CUDA processing was not executed because no NVIDIA GPU is
 available on this Mac. Docker builds were not run locally. CI retains the
 CPU/GPU container build checks and now also runs the CPU regression tests.
 The restyled illustration is explanatory artwork, not experimental evidence.
+
+## Visual refresh verification
+
+The illustration retains the light scientific-pipeline layout, replaces the cup with an unbranded silver can, and uses indigo accents. It is explanatory artwork, not evidence of a new can experiment. The numerical source and CLI code were unchanged. After this update, the CPU suite again passed 28 tests, with 7 CUDA tests skipped; Ruff passed.
