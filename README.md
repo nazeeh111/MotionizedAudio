@@ -72,9 +72,11 @@ python motionized_audio.py -i testvid.avi --biort near_sym_a --qshift qshift_a
 - `--biort`: `antonini`, `legall`, `near_sym_a`, `near_sym_b`
 - `--qshift`: `qshift_06`, `qshift_a`, `qshift_b`, `qshift_c`, `qshift_d`
 
-When `-fl` and/or `-fh` are specified, a Butterworth filter is applied to the phase signals before audio reconstruction, rejecting low-frequency drift and high-frequency noise.
+When `-fl` and/or `-fh` are specified, a Butterworth filter is applied to the phase signals before audio reconstruction. Cutoffs must be positive and strictly below half the capture rate (the Nyquist limit). Filtering needs at least 28 decoded frames for a bandpass, or 16 for a single cutoff. Invalid filters fail explicitly instead of silently changing the requested frequency range.
 
-When `--fps` is specified, the given value is used as the audio sample rate instead of the frame rate reported by the video container. This is necessary for high-speed camera footage where the container frame rate does not reflect the actual capture rate.
+When `--fps` is specified, the given value is used as the capture rate instead of the frame rate reported by the video container. This is necessary for high-speed camera footage where the container frame rate does not reflect the actual capture rate. WAV requires an integer sample rate: fractional rates such as 29.97 Hz are resampled to the nearest positive integer rate, preserving timing to the nearest output sample instead of changing playback speed. Integer rates retain one audio sample per decoded frame.
+
+Input and output must be different files, including symlink and hard-link aliases. WAV output is written to a temporary file beside its destination and published only after encoding succeeds, so a failed write preserves an existing output. Rates that cannot fit the WAV header are rejected.
 
 When `--roi` is specified, each frame is cropped to the given rectangle before the DTCWT decomposition. This reduces computation and can improve SNR by focusing on the vibrating object.
 
@@ -103,8 +105,20 @@ python -m pytest tests/ -q
 ruff check .
 ```
 
-Local checks passed 28 CPU tests and five byte-identical output comparisons.
-Seven CUDA tests were skipped because NVIDIA hardware was unavailable.
+Run the reproducible [known-motion experiment](experiments/README.md):
+
+```bash
+python experiments/known_motion.py --output-dir /tmp/motionized-audio-demo
+```
+
+It generates subpixel 80/200 Hz motion and a static control, invokes the CLI, and
+checks recovered frequencies, amplitude ratio, filter rejection, and WAV timing.
+Local results: 80 Hz dominant peak, 0.4986 measured amplitude ratio (expected 0.5),
+69.04 dB relative out-of-band rejection, and exactly silent static output.
+These are synthetic image-motion measurements, not real speech recovery.
+
+Local regression checks passed 43 CPU tests; seven CUDA tests were skipped
+because NVIDIA hardware was unavailable.
 See [verification details](VERIFICATION.md) for the tested versions and limits.
 The compatible `visualmic.py` command and import remain available.
 

@@ -1,5 +1,50 @@
 # Verification
 
+## End-to-end recovery and correctness audit (2026-09-23)
+
+A fresh Python 3.12.13 environment installed the declared CPU and development
+requirements from the available local package cache: NumPy 1.26.4, SciPy 1.17.1,
+OpenCV 4.11.0.86, dtcwt 0.14.0, pytest 8.4.2 and Ruff 0.16.8. No system packages
+or prior virtual environment were inherited. The source was exported without
+Git metadata or caches before rerunning the experiment.
+
+- `python -m pytest tests -q`: **45 passed, 7 CUDA tests skipped**.
+- `ruff check .` and `git diff --check`: passed.
+- `python experiments/known_motion.py --output-dir /tmp/motionized-audio-demo`:
+  six scientific acceptance checks passed. Every WAV has the expected format,
+  sample count and one-second timing. See the [method](experiments/README.md)
+  and [machine-readable measurements](docs/known-motion-results.json).
+- Same experiment run against archived baseline commit
+  `df75677a0fcc95fca69d39947a9f99741215cbb6`: all three WAVs are byte-identical
+  to the revised source for valid integer-rate input.
+
+The audit reproduced these failures before changing the implementation:
+
+| Failure | Revised behavior |
+| --- | --- |
+| Bandpass at 12 frames silently bypassed; 16 and 27 frames raised a SciPy padding traceback | Explicit minimum of 28 frames for bandpass, 16 for a single cutoff; actionable error, previous output preserved |
+| Out-of-Nyquist cutoffs were silently skipped or clamped | Reject invalid requested frequency ranges and explain the capture-rate limit |
+| Nonfinite FPS/cutoffs, negative cutoffs and zero batch size escaped early validation | Reject invalid arguments before opening input |
+| Output equal to input overwrote the original video | Reject identical paths, symlinks and existing hard-link aliases |
+| 29.97 fps was written as 29 Hz, changing playback duration and pitch | Resample fractional capture rates to the nearest positive integer WAV rate; integer-rate results remain unchanged |
+| A finite but unrepresentable FPS of 2147483648 caused a WAV-header traceback and truncated existing output to zero bytes | Validate the 16-bit mono WAV sample/byte-rate bounds; reject before opening output |
+| An encoder or disk error after a partial write destroyed existing output | Stage beside the output and publish with atomic replacement only after successful encoding; clean partial temporary files |
+
+Independent review reproduced the oversized-rate truncation against both the prior committed version and the proposed changes. New regressions failed on the old writer and pass with atomic output, including a simulated disk error after an actual partial file write. The full suite and known-motion experiment were rerun after this repair.
+
+Regression evidence includes a 100-second, 3 Hz signal sampled at 29.97 Hz,
+which now produces 3,000 samples at 30 Hz with a 3 Hz dominant peak. Resampling
+uses a bounded rational approximation and rounds duration to an output sample;
+it cannot improve the original temporal resolution. Resampling can overshoot,
+so PCM values are clipped before integer conversion instead of wrapping.
+
+CUDA processing and Docker execution remain unverified locally. CI now runs
+the known-motion experiment in the CPU image; adding the job is not evidence
+that a remote CI run passed. The fixture is ideal image displacement, not real
+acoustic speech recovery or calibrated pressure measurement.
+
+# Earlier equivalence checks
+
 Verified locally on macOS ARM64 with Python 3.12.13, NumPy 1.26.4,
 SciPy 1.17.1, OpenCV 4.11.0 and dtcwt 0.13.0.
 

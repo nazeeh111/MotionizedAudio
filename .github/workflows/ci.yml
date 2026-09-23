@@ -36,6 +36,9 @@ jobs:
       - name: CPU regression tests
         run: docker run --rm --entrypoint "" motionized-audio-ci python -m pytest tests/ -q
 
+      - name: Known-motion end-to-end experiment
+        run: docker run --rm --entrypoint "" motionized-audio-ci python experiments/known_motion.py --output-dir /tmp/known-motion
+
   test-gpu:
     runs-on: ubuntu-latest
     steps:

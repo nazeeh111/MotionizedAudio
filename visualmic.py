@@ -11,8 +11,10 @@ Project owner: nazeeh111.
 __version__ = "2.0.0"
 
 import argparse
+from fractions import Fraction
 import os
 import sys
+import tempfile
 import time
 
 from scipy import signal
@@ -39,39 +41,73 @@ def find_best_shift(a, b):
 	return np.argmax(correlation) - (len(b) - 1)
 
 
+def wav_sample_rate(sample_rate):
+	if not np.isfinite(sample_rate) or sample_rate <= 0:
+		raise ValueError("sample rate must be finite and positive")
+	wav_rate = max(1, round(sample_rate))
+	# WAV stores both sample rate and bytes per second as unsigned 32-bit
+	# integers. Mono int16 needs two bytes per sample.
+	if wav_rate > (2 ** 32 - 1) // 2:
+		raise ValueError("sample rate is too high for 16-bit mono WAV (maximum 2147483647 Hz)")
+	return wav_rate
+
+
 def save_wav(samples, output_name, sample_rate):
-	waveform_integers = np.int16(samples * 32767)
-	write(output_name, sample_rate, waveform_integers)
+	wav_rate = wav_sample_rate(sample_rate)
+	if wav_rate != sample_rate:
+		# WAV stores an integer sample rate. Resample instead of relabeling
+		# fractional capture rates, which would change duration and pitch.
+		ratio = Fraction(wav_rate / sample_rate).limit_denominator(10000)
+		sample_count = max(1, round(len(samples) * wav_rate / sample_rate))
+		samples = signal.resample_poly(samples, ratio.numerator, ratio.denominator)[:sample_count]
+		print(f"Resampled {sample_rate} Hz capture rate to {wav_rate} Hz for WAV output")
+	waveform_integers = np.int16(np.clip(samples, -1, 1) * 32767)
+	# Stage beside the destination so publication is atomic on the same
+	# filesystem. A codec, disk, or rename error must preserve prior output.
+	fd, staged = tempfile.mkstemp(prefix='.motionized-', suffix='.wav',
+	                             dir=os.path.dirname(os.path.abspath(output_name)))
+	os.close(fd)
+	try:
+		write(staged, wav_rate, waveform_integers)
+		os.replace(staged, output_name)
+	finally:
+		if os.path.exists(staged):
+			os.unlink(staged)
 	print(f"Output saved to {output_name}")
 
 
-def postprocess_phase_signals(phase_signals, frame_count, nlevels, n_orient, ref_level, ref_orient, fps, freq_low=None, freq_high=None):
-	# Temporal bandpass filtering
+def temporal_filter(fps, frame_count, freq_low=None, freq_high=None):
+	"""Validate a requested filter, including SciPy's default edge padding."""
+	if not np.isfinite(fps) or fps <= 0:
+		raise ValueError("FPS must be finite and positive")
+	if freq_low is None and freq_high is None:
+		return None
 	nyquist = fps / 2.0
-	apply_filter = (freq_low is not None or freq_high is not None) and frame_count > 12
+	for name, value in (("freq-low", freq_low), ("freq-high", freq_high)):
+		if value is not None:
+			if not np.isfinite(value) or value <= 0:
+				raise ValueError(f"--{name} must be finite and positive")
+			if value >= nyquist:
+				raise ValueError(f"--{name} ({value} Hz) must be below Nyquist ({nyquist} Hz); set --fps to the actual capture rate")
+	if freq_low is not None and freq_high is not None:
+		if freq_low >= freq_high:
+			raise ValueError("--freq-low must be less than --freq-high")
+		sos = signal.butter(4, [freq_low / nyquist, freq_high / nyquist], btype='bandpass', output='sos')
+	elif freq_low is not None:
+		sos = signal.butter(4, freq_low / nyquist, btype='highpass', output='sos')
+	else:
+		sos = signal.butter(4, freq_high / nyquist, btype='lowpass', output='sos')
+	# Same default padding rule as scipy.signal.sosfiltfilt.
+	padlen = 3 * (2 * len(sos) + 1 - min((sos[:, 2] == 0).sum(), (sos[:, 5] == 0).sum()))
+	if frame_count <= padlen:
+		raise ValueError(f"requested temporal filter needs at least {padlen + 1} frames; got {frame_count}. Use a longer clip or omit the filter")
+	return sos
 
-	if apply_filter:
-		if freq_low is not None and freq_high is not None:
-			if freq_low >= nyquist:
-				print(f"Warning: freq_low ({freq_low} Hz) >= Nyquist ({nyquist} Hz), skipping filter")
-				apply_filter = False
-			else:
-				freq_high_clamped = min(freq_high, nyquist * 0.99)
-				sos = signal.butter(4, [freq_low / nyquist, freq_high_clamped / nyquist], btype='bandpass', output='sos')
-				print(f"Applying bandpass filter: {freq_low}\u2013{freq_high_clamped:.0f} Hz")
-		elif freq_low is not None:
-			if freq_low >= nyquist:
-				print(f"Warning: freq_low ({freq_low} Hz) >= Nyquist ({nyquist} Hz), skipping filter")
-				apply_filter = False
-			else:
-				sos = signal.butter(4, freq_low / nyquist, btype='highpass', output='sos')
-				print(f"Applying highpass filter: {freq_low} Hz")
-		else:
-			freq_high_clamped = min(freq_high, nyquist * 0.99)
-			sos = signal.butter(4, freq_high_clamped / nyquist, btype='lowpass', output='sos')
-			print(f"Applying lowpass filter: {freq_high_clamped:.0f} Hz")
 
-	if apply_filter:
+def postprocess_phase_signals(phase_signals, frame_count, nlevels, n_orient, ref_level, ref_orient, fps, freq_low=None, freq_high=None):
+	sos = temporal_filter(fps, frame_count, freq_low, freq_high)
+	if sos is not None:
+		print(f"Applying temporal filter: low={freq_low}, high={freq_high} Hz")
 		for i in range(nlevels):
 			for j in range(n_orient):
 				phase_signals[:, i, j] = signal.sosfiltfilt(sos, phase_signals[:, i, j])
@@ -273,7 +309,7 @@ def extract_audio_gpu(cap, frame_count, nlevels, n_orient, ref_index, ref_orient
 	return postprocess_phase_signals(phase_signals, frame_count, nlevels, n_orient, ref_level, ref_orient, fps, freq_low, freq_high)
 
 
-def main():
+def _main():
 	parser = argparse.ArgumentParser(description='MotionizedAudio: Recover sound from video using 2D DTCWT')
 
 	parser.add_argument(
@@ -299,6 +335,17 @@ def main():
 	output_name = args.output
 	freq_low = args.freq_low
 	freq_high = args.freq_high
+	for name, value in (("fps", args.fps), ("freq-low", freq_low), ("freq-high", freq_high)):
+		if value is not None and (not np.isfinite(value) or value <= 0):
+			parser.error(f"--{name} must be finite and positive")
+	if args.fps is not None:
+		wav_sample_rate(args.fps)
+	if args.batch_size < 1:
+		parser.error("--batch-size must be >= 1")
+	if os.path.realpath(filename) == os.path.realpath(output_name) or (
+		os.path.exists(filename) and os.path.exists(output_name) and os.path.samefile(filename, output_name)
+	):
+		parser.error("output must be different from the input video")
 	if freq_low is not None and freq_high is not None and freq_low >= freq_high:
 		print(f"Error: freq-low ({freq_low} Hz) must be less than freq-high ({freq_high} Hz)")
 		sys.exit(1)
@@ -357,7 +404,7 @@ def main():
 		cap.release()
 		sys.exit(1)
 
-	if fps <= 0:
+	if not np.isfinite(fps) or fps <= 0:
 		print("Warning: could not determine FPS from video, defaulting to 30")
 		fps = 30
 
@@ -368,6 +415,8 @@ def main():
 			sys.exit(1)
 		print(f"Overriding video FPS ({fps}) with --fps {args.fps}")
 		fps = args.fps
+
+	temporal_filter(fps, frame_count, freq_low, freq_high)
 
 	print(f"frame_count: {frame_count}, frame_width: {frame_width}, frame_height: {frame_height}, fps: {fps}")
 
@@ -419,8 +468,16 @@ def main():
 	else:
 		sound_data = extract_audio(cap, frame_count, nlevels, n_orient, ref_index, ref_orient, ref_level, fps, freq_low, freq_high, roi, args.biort, args.qshift)
 
-	save_wav(sound_data, output_name, int(fps))
+	save_wav(sound_data, output_name, fps)
 	print(f"Total time: {format_duration(time.time() - pipeline_start)}")
+
+
+def main():
+	try:
+		_main()
+	except (ValueError, OSError) as exc:
+		print(f"Error: {exc}", file=sys.stderr)
+		sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,84 @@
+{
+  "experiment": "analytic-horizontal-two-tone-subpixel-motion-v1",
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Darwin-arm64",
+    "numpy": "1.26.4",
+    "scipy": "1.17.1",
+    "opencv-python": "4.11.0.86",
+    "dtcwt": "0.14.0"
+  },
+  "input": {
+    "capture_fps": 1000,
+    "container_fps": 30,
+    "frames": 1000,
+    "size": [
+      96,
+      96
+    ],
+    "frequencies_hz": [
+      80,
+      200
+    ],
+    "displacement_amplitudes_pixels": [
+      0.2,
+      0.1
+    ],
+    "codec": "FFV1",
+    "analysis_edge_exclusion_samples": 100
+  },
+  "results": {
+    "unfiltered": {
+      "sample_rate_hz": 1000,
+      "sample_count": 1000,
+      "duration_seconds": 1.0,
+      "nonzero_samples": 1000,
+      "dominant_frequency_hz": 80.0,
+      "tone_amplitudes_pcm": [
+        22523.261625731022,
+        11230.488194328007
+      ],
+      "ratio_200_to_80": 0.49861731311144003,
+      "two_tone_r_squared": 0.9999916180633043,
+      "wav_sha256": "bbbfb87b9d91793cc7acf6e26944fffbb3ebb64fa12fe520ba70e048c2d3466e"
+    },
+    "bandpass": {
+      "sample_rate_hz": 1000,
+      "sample_count": 1000,
+      "duration_seconds": 1.0,
+      "nonzero_samples": 1000,
+      "dominant_frequency_hz": 80.0,
+      "tone_amplitudes_pcm": [
+        30532.285625539032,
+        5.376264682118954
+      ],
+      "ratio_200_to_80": 0.00017608457971524818,
+      "two_tone_r_squared": 0.9999997521732071,
+      "wav_sha256": "566f5f06a74b3bf4e6f454f8bad40eaa5d94f09e7945b939a9b4a484f07db808"
+    },
+    "static": {
+      "sample_rate_hz": 1000,
+      "sample_count": 1000,
+      "duration_seconds": 1.0,
+      "nonzero_samples": 0,
+      "dominant_frequency_hz": null,
+      "tone_amplitudes_pcm": [
+        0.0,
+        0.0
+      ],
+      "ratio_200_to_80": null,
+      "two_tone_r_squared": null,
+      "wav_sha256": "fd567150db7a2aee5ac42c81e98cfa51b9f2acec29f2aa4f5939ade81ba8c653"
+    }
+  },
+  "bandpass_relative_rejection_db": 69.04092058039662,
+  "checks": {
+    "dominant_frequency_within_one_fft_bin": true,
+    "known_tones_explain_at_least_99_percent_variance": true,
+    "amplitude_ratio_within_0_03_of_expected_0_5": true,
+    "bandpass_relative_rejection_at_least_35_db": true,
+    "bandpass_retains_80_hz": true,
+    "static_control_is_exactly_silent": true
+  },
+  "passed": true
+}
