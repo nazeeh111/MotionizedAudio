@@ -1,7 +1,5 @@
 # MotionizedAudio
 
-**Development history:** Developed locally using Git before publication. These projects were published to GitHub together, so similar upload dates do not indicate when development began.
-
 **Hear the motion. Recover sound from video.**
 
 MotionizedAudio extracts tiny surface vibrations from high-speed footage and
