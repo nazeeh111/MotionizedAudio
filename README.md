@@ -1,12 +1,8 @@
 # MotionizedAudio
 
-**Hear the motion. Recover sound from video.**
-
 MotionizedAudio extracts tiny surface vibrations from high-speed footage and
 reconstructs them as a WAV audio signal. Focus on an object, choose a frequency
 range, and process on CPU or an NVIDIA CUDA GPU.
-
-![MotionizedAudio processing pipeline](assets/motionized-audio-pipeline.png)
 
 ## Quick start
 
@@ -25,7 +21,6 @@ python motionized_audio.py -i recording.avi -o recovered.wav
 Use `--fps` for the camera's actual capture rate when it differs from the
 playback rate stored in the video. High-speed capture is important: a 30 fps
 recording cannot recover the same frequency range as a 2200 fps recording.
-The illustrative diagram above is explanatory artwork, not measurement evidence.
 
 ## Usage
 
