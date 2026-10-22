@@ -4,7 +4,7 @@ MotionizedAudio extracts tiny surface vibrations from high-speed footage and
 reconstructs them as a WAV audio signal. Focus on an object, choose a frequency
 range, and process on CPU or an NVIDIA CUDA GPU.
 
-![Measured recovery of two synthetic image-motion tones](assets/known-motion-result.svg)
+![Measured recovery of two synthetic image-motion tones](assets/known-motion-recovery.svg)
 
 The chart summarizes the [reproducible known-motion experiment](experiments/README.md):
 an ideal texture moves at 80 and 200 Hz, and the recovered WAV contains both
