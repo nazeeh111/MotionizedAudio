@@ -1,33 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="408" viewBox="0 0 960 408" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="586" viewBox="0 0 480 586" role="img" aria-labelledby="title desc">
   <title id="title">MotionizedAudio known-motion recovery result</title>
   <desc id="desc">For a synthetic 80 and 200 hertz moving texture, the recovered 200-to-80 hertz fitted amplitude ratio is 0.4986 before filtering and 0.000176 after a 50 to 120 hertz bandpass. Relative rejection is 69.04 decibels. The static control has zero nonzero audio samples.</desc>
-  <rect width="960" height="408" rx="18" fill="#101827"/>
-  <text x="36" y="51" fill="#eef7ff" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="700">Known motion → measured recovery</text>
-  <text x="36" y="78" fill="#9bb1c5" font-family="Arial, Helvetica, sans-serif" font-size="15">Synthetic image motion · 1,000 frames at 1,000 fps · CPU reconstruction</text>
-
-  <rect x="36" y="106" width="430" height="216" rx="12" fill="#192638" stroke="#345064"/>
-  <text x="58" y="139" fill="#b9d5e6" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700">UNFILTERED OUTPUT</text>
-  <text x="58" y="168" fill="#9bb1c5" font-family="Arial, Helvetica, sans-serif" font-size="14">Fitted tone amplitude relative to 80 Hz</text>
-  <text x="58" y="208" fill="#eef7ff" font-family="Arial, Helvetica, sans-serif" font-size="16">80 Hz</text>
-  <rect x="139" y="191" width="280" height="22" rx="5" fill="#5dd2df"/>
-  <text x="58" y="248" fill="#eef7ff" font-family="Arial, Helvetica, sans-serif" font-size="16">200 Hz</text>
-  <rect x="139" y="231" width="140" height="22" rx="5" fill="#a996ef"/>
-  <text x="58" y="295" fill="#eef7ff" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">0.4986</text>
-  <text x="144" y="294" fill="#9bb1c5" font-family="Arial, Helvetica, sans-serif" font-size="14">ratio · expected 0.5</text>
-
-  <rect x="494" y="106" width="430" height="216" rx="12" fill="#192638" stroke="#345064"/>
-  <text x="516" y="139" fill="#b9d5e6" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700">50–120 HZ BANDPASS</text>
-  <text x="516" y="168" fill="#9bb1c5" font-family="Arial, Helvetica, sans-serif" font-size="14">Each WAV normalized separately; compare ratios</text>
-  <text x="516" y="208" fill="#eef7ff" font-family="Arial, Helvetica, sans-serif" font-size="16">80 Hz</text>
-  <rect x="597" y="191" width="280" height="22" rx="5" fill="#5dd2df"/>
-  <text x="516" y="248" fill="#eef7ff" font-family="Arial, Helvetica, sans-serif" font-size="16">200 Hz</text>
-  <rect x="597" y="231" width="280" height="22" rx="5" fill="#30465a"/>
-  <circle cx="599" cy="242" r="3" fill="#a996ef"/>
-  <text x="516" y="295" fill="#eef7ff" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">0.000176</text>
-  <text x="630" y="294" fill="#9bb1c5" font-family="Arial, Helvetica, sans-serif" font-size="14">ratio · 200 Hz nearly absent</text>
-
-  <line x1="36" y1="348" x2="924" y2="348" stroke="#345064"/>
-  <text x="36" y="378" fill="#5dd2df" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700">69.04 dB</text>
-  <text x="136" y="378" fill="#b9d5e6" font-family="Arial, Helvetica, sans-serif" font-size="15">relative 200 Hz rejection</text>
-  <text x="591" y="378" fill="#b9d5e6" font-family="Arial, Helvetica, sans-serif" font-size="15">Static control: 0 nonzero samples</text>
+  <rect width="480" height="586" rx="16" fill="#101827"/>
+  <text x="24" y="39" fill="#eef7ff" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Known motion → measured recovery</text>
+  <text x="24" y="65" fill="#a9c0d2" font-family="Arial, Helvetica, sans-serif" font-size="14">Synthetic texture · 1,000 frames · 1,000 fps · CPU</text>
+  <rect x="20" y="89" width="440" height="198" rx="12" fill="#192638" stroke="#345064"/>
+  <text x="39" y="117" fill="#b9d5e6" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700">UNFILTERED OUTPUT</text>
+  <text x="39" y="139" fill="#a9c0d2" font-family="Arial, Helvetica, sans-serif" font-size="13">Fitted tone amplitude relative to 80 Hz</text>
+  <text x="39" y="176" fill="#eef7ff" font-family="Arial, Helvetica, sans-serif" font-size="15">80 Hz</text>
+  <rect x="120" y="159" width="300" height="21" rx="5" fill="#5dd2df"/>
+  <text x="39" y="213" fill="#eef7ff" font-family="Arial, Helvetica, sans-serif" font-size="15">200 Hz</text>
+  <rect x="120" y="196" width="150" height="21" rx="5" fill="#a996ef"/>
+  <text x="39" y="261" fill="#eef7ff" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700">0.4986</text>
+  <text x="133" y="260" fill="#a9c0d2" font-family="Arial, Helvetica, sans-serif" font-size="14">ratio · expected 0.5</text>
+  <rect x="20" y="305" width="440" height="198" rx="12" fill="#192638" stroke="#345064"/>
+  <text x="39" y="333" fill="#b9d5e6" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700">50–120 HZ BANDPASS</text>
+  <text x="39" y="355" fill="#a9c0d2" font-family="Arial, Helvetica, sans-serif" font-size="13">Each WAV normalized separately; compare ratios</text>
+  <text x="39" y="392" fill="#eef7ff" font-family="Arial, Helvetica, sans-serif" font-size="15">80 Hz</text>
+  <rect x="120" y="375" width="300" height="21" rx="5" fill="#5dd2df"/>
+  <text x="39" y="429" fill="#eef7ff" font-family="Arial, Helvetica, sans-serif" font-size="15">200 Hz</text>
+  <rect x="120" y="412" width="300" height="21" rx="5" fill="#30465a"/>
+  <circle cx="123" cy="422.5" r="3" fill="#a996ef"/>
+  <text x="39" y="477" fill="#eef7ff" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700">0.000176</text>
+  <text x="163" y="476" fill="#a9c0d2" font-family="Arial, Helvetica, sans-serif" font-size="14">ratio · 200 Hz suppressed</text>
+  <line x1="20" y1="521" x2="460" y2="521" stroke="#345064"/>
+  <text x="24" y="547" fill="#5dd2df" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700">69.04 dB</text>
+  <text x="117" y="547" fill="#b9d5e6" font-family="Arial, Helvetica, sans-serif" font-size="14">relative 200 Hz rejection</text>
+  <text x="24" y="571" fill="#b9d5e6" font-family="Arial, Helvetica, sans-serif" font-size="14">Static control: 0 nonzero WAV samples</text>
 </svg>
