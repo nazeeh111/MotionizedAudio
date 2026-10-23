@@ -221,20 +221,24 @@ def extract_audio_gpu(cap, frame_count, nlevels, n_orient, ref_index, ref_orient
 
 	for fc in range(frame_count):
 		ret, raw_frame = cap.read()
-		if not ret or raw_frame is None:
+		decode_failed = not ret or raw_frame is None
+		if decode_failed:
 			print(f"Warning: could not read frame {fc}, stopping at {frames_read} frames")
-			break
-		gray = cv2.cvtColor(raw_frame, cv2.COLOR_BGR2GRAY)
-		if roi is not None:
-			rx, ry, rw, rh = roi
-			gray = gray[ry:ry+rh, rx:rx+rw]
+		else:
+			gray = cv2.cvtColor(raw_frame, cv2.COLOR_BGR2GRAY)
+			if roi is not None:
+				rx, ry, rw, rh = roi
+				gray = gray[ry:ry+rh, rx:rx+rw]
 
-		batch_frames.append(gray.astype(np.float32))
-		frames_read += 1
+			batch_frames.append(gray.astype(np.float32))
+			frames_read += 1
 
-		if len(batch_frames) == batch_size or fc == frame_count - 1:
+		# A decoder can stop before its advertised length. Flush its pending
+		# decoded frames through the same transform before leaving the loop.
+		if batch_frames and (len(batch_frames) == batch_size or fc == frame_count - 1 or decode_failed):
 			n_in_batch = len(batch_frames)
-			batch_start_fc = fc - n_in_batch + 1
+			batch_start_fc = frames_read - n_in_batch
+			batch_end_fc = frames_read - 1
 
 			batch_np = np.stack(batch_frames)[:, np.newaxis, :, :]
 			try:
@@ -248,7 +252,7 @@ def extract_audio_gpu(cap, frame_count, nlevels, n_orient, ref_index, ref_orient
 				raise
 
 			# Extract reference coefficients if reference frame is in this batch
-			if ref_coeffs is None and ref_index >= batch_start_fc and ref_index <= fc:
+			if ref_coeffs is None and ref_index >= batch_start_fc and ref_index <= batch_end_fc:
 				ref_pos = ref_index - batch_start_fc
 				ref_coeffs = [Yh[level][ref_pos:ref_pos+1].clone() for level in range(nlevels)]
 
@@ -294,6 +298,9 @@ def extract_audio_gpu(cap, frame_count, nlevels, n_orient, ref_index, ref_orient
 				remaining = (frame_count - frames_read) / rate if rate > 0 else 0
 				print(f"Processing: {frames_read}/{frame_count} frames ({100 * frames_read // frame_count}%) | Elapsed: {format_duration(elapsed)} | ETA: {format_duration(remaining)}")
 				last_report = frames_read
+
+		if decode_failed:
+			break
 
 	cap.release()
 
