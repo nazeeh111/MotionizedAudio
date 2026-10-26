@@ -112,16 +112,13 @@ def postprocess_phase_signals(phase_signals, frame_count, nlevels, n_orient, ref
 			for j in range(n_orient):
 				phase_signals[:, i, j] = signal.sosfiltfilt(sos, phase_signals[:, i, j])
 
-	shift_matrix = np.zeros((nlevels, n_orient))
 	ref_vector = phase_signals[:, ref_level, ref_orient].reshape(-1)
-	for i in range(nlevels):
-		for j in range(n_orient):
-			shift_matrix[i, j] = find_best_shift(ref_vector, phase_signals[:, i, j].reshape(-1))
-
 	sound_raw = np.zeros(frame_count)
 	for i in range(nlevels):
 		for j in range(n_orient):
-			sound_raw += np.roll(phase_signals[:, i, j], int(shift_matrix[i, j]))
+			phase = phase_signals[:, i, j]
+			shift = find_best_shift(ref_vector, phase.reshape(-1))
+			sound_raw += np.roll(phase, int(shift))
 
 	p_min = np.min(sound_raw)
 	p_max = np.max(sound_raw)
