@@ -6,11 +6,7 @@ range, and process on CPU or an NVIDIA CUDA GPU.
 
 ![Measured recovery of two synthetic image-motion tones](assets/known-motion-recovery.svg)
 
-The chart summarizes the [reproducible known-motion experiment](experiments/README.md):
-an ideal texture moves at 80 and 200 Hz, and the recovered WAV contains both
-tones at their expected relative strength. A 50–120 Hz bandpass suppresses the
-200 Hz tone. These are **synthetic image-motion results**, not recovered speech
-or a camera recording of a vibrating object. [Measurements and environment](docs/known-motion-results.json).
+Synthetic image motion at 80 and 200 Hz produces both recovered tones; a 50–120 Hz filter suppresses the second. This tests ideal image displacement, not speech or a physical camera recording. [Reproduce the experiment](experiments/README.md) · [Measurements and environment](docs/known-motion-results.json).
 
 ## Quick start
 
@@ -23,6 +19,14 @@ cd MotionizedAudio
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+python experiments/known_motion.py --output-dir /tmp/motionized-audio-demo
+```
+
+This creates the synthetic video, recovered WAVs, CLI logs and `results.json` in a new directory. It needs no downloaded recording. Use a new output directory for each run. The WAVs have a 1000 Hz sample rate; some players need resampling. [Experiment, acceptance criteria and measured results](experiments/README.md).
+
+To process your own recording:
+
+```bash
 python motionized_audio.py -i recording.avi -o recovered.wav
 ```
 
@@ -106,13 +110,7 @@ python -m pytest tests/ -q
 ruff check .
 ```
 
-Run the reproducible [known-motion experiment](experiments/README.md):
-
-```bash
-python experiments/known_motion.py --output-dir /tmp/motionized-audio-demo
-```
-
-It generates subpixel 80/200 Hz motion and a static control, invokes the CLI, and
+The [quick-start experiment](experiments/README.md) generates subpixel 80/200 Hz motion and a static control, invokes the CLI, and
 checks recovered frequencies, amplitude ratio, filter rejection, and WAV timing.
 Local results: 80 Hz dominant peak, 0.4986 measured amplitude ratio (expected 0.5),
 69.04 dB relative out-of-band rejection, and exactly silent static output.
